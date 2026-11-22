@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Kassa Tizimi (POS)</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --primary: #16a34a;
+      --primary-hover: #15803d;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --danger: #dc2626;
+      --danger-hover: #b91c1c;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0.3px;
+    }
+
+    header .meta {
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 20px;
+      padding: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+      border: 1px solid var(--border);
+    }
+
+    h2 {
+      margin: 0 0 14px 0;
+      font-size: 17px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    input, select, button {
+      font-family: inherit;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 9px 12px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      font-weight: 600;
+      transition: 0.15s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-accent:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+    .btn-danger:hover {
+      background: var(--danger-hover);
+    }
+
+    .btn-muted {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+    .btn-muted:hover {
+      background: #cbd5e1;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+      gap: 12px;
+      max-height: 430px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .product-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      background: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .product-item:hover {
+      border-color: var(--accent);
+      background: #eff6ff;
+    }
+
+    .product-code {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .product-name {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .product-price {
+      color: var(--primary-hover);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .product-stock {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 9px 6px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      background: #f8fafc;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .qty-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .qty-btn {
+      padding: 2px 8px;
+      background: #e2e8f0;
+      color: #0f172a;
+      border-radius: 5px;
+    }
+
+    .summary-box {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 2px dashed var(--border);
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 7px;
+      font-size: 14px;
+    }
+
+    .summary-row.total {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-top: 8px;
+    }
+
+    .payment-area {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .receipt-box {
+      margin-top: 16px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      padding: 14px;
+      font-family: "Courier New", monospace;
+      font-size: 12.5px;
+      white-space: pre-wrap;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .add-product-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .history-section {
+      max-width: 1400px;
+      margin: 0 auto 24px auto;
+      padding: 0 20px;
+    }
+
+    .badge {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #dcfce7;
+      color: #166534;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>MARKET KASSA TIZIMI — POS</h1>
+      <div class="meta">Mahsulot skanerlash/tanlash, savat, chegirma, to‘lov va chek</div>
+    </div>
+    <div class="meta" id="clock"></div>
+  </header>
+
+  <div class="layout">
+    <!-- CHAP TOMON: MAHSULOTLAR VA OMBOR -->
+    <div>
+      <div class="card">
+        <h2>1. Mahsulotlar ro‘yxati (Shtrix-kod yoki nom bo‘yicha qidiruv)</h2>
+        <div class="toolbar">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Shtrix-kod (masalan: 478001) yoki mahsulot nomini yozing..."
+            style="flex: 1; min-width: 220px;"
+            oninput="renderProducts()"
+            onkeydown="handleSearchEnter(event)"
+          />
+          <button class="btn-accent" onclick="quickAddBySearch()">Tez qo‘shish</button>
+        </div>
+
+        <div class="products-grid" id="productsGrid"></div>
+      </div>
+
+      <div class="card" style="margin-top: 18px;">
+        <h2>Yangi mahsulot qo‘shish (Omborga kirim)</h2>
+        <div class="add-product-form">
+          <input type="text" id="newCode" placeholder="Shtrix-kod" />
+          <input type="text" id="newName" placeholder="Mahsulot nomi" />
+          <input type="number" id="newPrice" placeholder="Narxi (so'm)" min="100" />
+          <input type="number" id="newStock" placeholder="Soni (dona)" min="1" />
+          <button class="btn-primary" onclick="addNewProduct()">Omborga qo‘shish</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- O'NG TOMON: SAVAT VA TO'LOV -->
+    <div class="card">
+      <h2>2. Xarid savati va hisob-kitob</h2>
+
+      <div style="max-height: 250px; overflow-y: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Mahsulot</th>
+              <th>Narx</th>
+              <th>Soni</th>
+              <th>Jami</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="cartBody"></tbody>
+        </table>
+      </div>
+
+      <div class="summary-box">
+        <div class="summary-row">
+          <span>Oraliq summa:</span>
+          <strong id="subtotalText">0 so‘m</strong>
+        </div>
+
+        <div class="summary-row" style="align-items: center;">
+          <span>Chegirma (%):</span>
+          <input
+            type="number"
+            id="discountInput"
+            value="0"
+            min="0"
+            max="100"
+            style="width: 90px; text-align: right;"
+            oninput="renderCart()"
+          />
+        </div>
+
+        <div class="summary-row">
+          <span>Chegirma summasi:</span>
+          <span id="discountAmountText">0 so‘m</span>
+        </div>
+
+        <div class="summary-row total">
+          <span>To‘lovga:</span>
+          <span id="totalText">0 so‘m</span>
+        </div>
+      </div>
+
+      <div class="payment-area">
+        <div>
+          <label style="font-size: 12px; color: var(--muted);">To‘lov turi</label>
+          <select id="paymentMethod" style="width: 100%; margin-top: 4px;" onchange="renderCart()">
+            <option value="Naqd">Naqd pul</option>
+            <option value="Karta (Uzcard/Humo)">Plastik karta (Uzcard / Humo)</option>
+            <option value="Click / Payme">Click / Payme</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size: 12px; color: var(--muted);">Mijoz bergan summa (so‘m)</label>
+          <input
+            type="number"
+            id="cashGivenInput"
+            placeholder="Masalan: 50000"
+            style="width: 100%; margin-top: 4px;"
+            oninput="renderCart()"
+          />
+        </div>
+      </div>
+
+      <div class="summary-row" style="margin-top: 10px;">
+        <span>Qaytim:</span>
+        <strong id="changeText">0 so‘m</strong>
+      </div>
+
+      <div class="toolbar" style="margin-top: 12px;">
+        <button class="btn-primary" style="flex: 1;" onclick="completeSale()">To‘lovni yakunlash va chek</button>
+        <button class="btn-muted" onclick="clearCart()">Savatni tozalash</button>
+      </div>
+
+      <div class="receipt-box" id="receiptBox">Chek shu yerda paydo bo‘ladi...</div>
+      <div style="margin-top: 8px; text-align: right;">
+        <button class="btn-accent" onclick="printReceipt()">Chekni chop etish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOTUVLAR TARIXI -->
+  <div class="history-section">
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+        <h2 style="margin: 0;">3. Bugungi sotuvlar tarixi</h2>
+        <div>
+          <span class="badge" id="totalSalesBadge">Jami tushum: 0 so‘m</span>
+          <button class="btn-danger" style="margin-left: 8px; padding: 6px 10px; font-size: 12px;" onclick="resetHistory()">Tarixni tozalash</button>
+        </div>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Chek #</th>
+              <th>Vaqt</th>
+              <th>Mahsulotlar</th>
+              <th>To‘lov turi</th>
+              <th>Yakuniy summa</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_PRODUCTS = [
+      { code: "478001", name: "Sut (1L)", price: 12000, stock: 30 },
+      { code: "478002", name: "Non (Buxanka)", price: 3500, stock: 50 },
+      { code: "478003", name: "Shakar (1kg)", price: 14500, stock: 25 },
+      { code: "478004", name: "Sariyog' (200g)", price: 24000, stock: 18 },
+      { code: "478005", name: "Choy (Qora, 100g)", price: 16000, stock: 20 },
+      { code: "478006", name: "Tuxum (10 dona)", price: 18000, stock: 35 },
+      { code: "478007", name: "Kunga-boqar yog'i (1L)", price: 21000, stock: 22 },
+      { code: "478008", name: "Suv (Gazsiz, 1.5L)", price: 4500, stock: 60 }
+    ];
+
+    let products = JSON.parse(localStorage.getItem("pos_products")) || DEFAULT_PRODUCTS;
+    let salesHistory = JSON.parse(localStorage.getItem("pos_sales")) || [];
+    let cart = [];
+
+    function formatMoney(num) {
+      return Number(num || 0).toLocaleString("uz-UZ") + " so‘m";
+    }
+
+    function saveData() {
+      localStorage.setItem("pos_products", JSON.stringify(products));
+      localStorage.setItem("pos_sales", JSON.stringify(salesHistory));
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById("clock").textContent = now.toLocaleString("uz-UZ");
+    }
+
+    function renderProducts() {
+      const query = document.getElementById("searchInput").value.trim().toLowerCase();
+      const grid = document.getElementById("productsGrid");
+      grid.innerHTML = "";
+
+      const filtered = products.filter(p =>
+        p.name.toLowerCase().includes(query) || p.code.toLowerCase().includes(query)
+      );
+
+      if (filtered.length === 0) {
+        grid.innerHTML = "<p style='color: var(--muted);'>Mahsulot topilmadi.</p>";
+        return;
+      }
+
+      filtered.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "product-item";
+        div.innerHTML = `
+          <div>
+            <div class="product-code">Kod: ${p.code}</div>
+            <div class="product-name">${p.name}</div>
+            <div class="product-price">${formatMoney(p.price)}</div>
+            <div class="product-stock">Omborda: ${p.stock} dona</div>
+          </div>
+          <button class="btn-primary" ${p.stock <= 0 ? "disabled" : ""} onclick="addToCart('${p.code}')">
+            ${p.stock > 0 ? "+ Savatga" : "Tugagan"}
+          </button>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    function handleSearchEnter(e) {
+      if (e.key === "Enter") {
+        quickAddBySearch();
+      }
+    }
+
+    function quickAddBySearch() {
+      const query = document.getElementById("searchInput").value.trim().toLowerCase();
+      if (!query) return;
+      const match = products.find(p => p.code.toLowerCase() === query || p.name.toLowerCase().includes(query));
+      if (match) {
+        addToCart(match.code);
+        document.getElementById("searchInput").value = "";
+        renderProducts();
+      } else {
+        alert("Bunday kod yoki nomdagi mahsulot topilmadi.");
+      }
+    }
+
+    function addToCart(code) {
+      const product = products.find(p => p.code === code);
+      if (!product || product.stock <= 0) {
+        alert("Mahsulot omborda qolmagan.");
+        return;
+      }
+
+      const existing = cart.find(item => item.code === code);
+      if (existing) {
+        if (existing.qty >= product.stock) {
+          alert("Ombordagi qoldiqdan ortiq qo‘shib bo‘lmaydi.");
+          return;
+        }
+        existing.qty += 1;
+      } else {
+        cart.push({
+          code: product.code,
+          name: product.name,
+          price: product.price,
+          qty: 1
+        });
+      }
+      renderCart();
+    }
+
+    function changeQty(code, delta) {
+      const item = cart.find(i => i.code === code);
+      const product = products.find(p => p.code === code);
+      if (!item) return;
+
+      const newQty = item.qty + delta;
+      if (newQty <= 0) {
+        cart = cart.filter(i => i.code !== code);
+      } else if (product && newQty > product.stock) {
+        alert("Omborda yetarli mahsulot yo‘q.");
+        return;
+      } else {
+        item.qty = newQty;
+      }
+      renderCart();
+    }
+
+    function removeFromCart(code) {
+      cart = cart.filter(i => i.code !== code);
+      renderCart();
+    }
+
+    function clearCart() {
+      cart = [];
+      document.getElementById("discountInput").value = 0;
+      document.getElementById("cashGivenInput").value = "";
+      renderCart();
+    }
+
+    function getTotals() {
+      const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+      let discountPct = parseFloat(document.getElementById("discountInput").value) || 0;
+      if (discountPct < 0) discountPct = 0;
+      if (discountPct > 100) discountPct = 100;
+
+      const discountAmount = Math.round((subtotal * discountPct) / 100);
+      const total = subtotal - discountAmount;
+
+      const method = document.getElementById("paymentMethod").value;
+      const cashGiven = parseFloat(document.getElementById("cashGivenInput").value) || 0;
+      const change = method === "Naqd" && cashGiven > total ? cashGiven - total : 0;
+
+      return { subtotal, discountPct, discountAmount, total, method, cashGiven, change };
+    }
+
+    function renderCart() {
+      const tbody = document.getElementById("cartBody");
+      tbody.innerHTML = "";
+
+      if (cart.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; color: var(--muted); padding: 18px;'>Savat bo‘sh</td></tr>";
+      } else {
+        cart.forEach(item => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><strong>${item.name}</strong><br><span style="font-size:11px; color:var(--muted);">${item.code}</span></td>
+            <td>${formatMoney(item.price)}</td>
+            <td>
+              <div class="qty-controls">
+                <button class="qty-btn" onclick="changeQty('${item.code}', -1)">-</button>
+                <span>${item.qty}</span>
+                <button class="qty-btn" onclick="changeQty('${item.code}', 1)">+</button>
+              </div>
+            </td>
+            <td><strong>${formatMoney(item.price * item.qty)}</strong></td>
+            <td><button class="btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="removeFromCart('${item.code}')">X</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      const { subtotal, discountAmount, total, change } = getTotals();
+      document.getElementById("subtotalText").textContent = formatMoney(subtotal);
+      document.getElementById("discountAmountText").textContent = "- " + formatMoney(discountAmount);
+      document.getElementById("totalText").textContent = formatMoney(total);
+      document.getElementById("changeText").textContent = formatMoney(change);
+    }
+
+    function addNewProduct() {
+      const code = document.getElementById("newCode").value.trim();
+      const name = document.getElementById("newName").value.trim();
+      const price = parseInt(document.getElementById("newPrice").value, 10);
+      const stock = parseInt(document.getElementById("newStock").value, 10);
+
+      if (!code || !name || isNaN(price) || price <= 0 || isNaN(stock) || stock <= 0) {
+        alert("Iltimos, shtrix-kod, nom, to‘g‘ri narx va son kiriting.");
+        return;
+      }
+
+      const existing = products.find(p => p.code === code);
+      if (existing) {
+        existing.name = name;
+        existing.price = price;
+        existing.stock += stock;
+      } else {
+        products.push({ code, name, price, stock });
+      }
+
+      saveData();
+      renderProducts();
+
+      document.getElementById("newCode").value = "";
+      document.getElementById("newName").value = "";
+      document.getElementById("newPrice").value = "";
+      document.getElementById("newStock").value = "";
+      alert("Mahsulot omborga qo‘shildi!");
+    }
+
+    function completeSale() {
+      if (cart.length === 0) {
+        alert("Savat bo‘sh! Avval mahsulot qo‘shing.");
+        return;
+      }
+
+      const { subtotal, discountPct, discountAmount, total, method, cashGiven, change } = getTotals();
+
+      if (method === "Naqd" && cashGiven > 0 && cashGiven < total) {
+        alert("Mijoz bergan naqd summa to‘lov summasidan kam!");
+        return;
+      }
+
+      // Ombordagi qoldiqni kamaytirish
+      cart.forEach(item => {
+        const prod = products.find(p => p.code === item.code);
+        if (prod) {
+          prod.stock = Math.max(0, prod.stock - item.qty);
+        }
+      });
+
+      const receiptNumber = "CHK-" + String(salesHistory.length + 1).padStart(5, "0");
+      const timestamp = new Date().toLocaleString("uz-UZ");
+
+      const saleRecord = {
+        id: receiptNumber,
+        time: timestamp,
+        items: cart.map(i => `${i.name} x${i.qty}`).join(", "),
+        method,
+        total
+      };
+
+      salesHistory.unshift(saleRecord);
+      saveData();
+
+      let lines = [
+        "========================================",
+        "           MARKET KASSA CHEKI          ",
+        "========================================",
+        `Chek raqami: ${receiptNumber}`,
+        `Sana/Vaqt:   ${timestamp}`,
+        `To'lov turi: ${method}`,
+        "----------------------------------------"
+      ];
+
+      cart.forEach(item => {
+        lines.push(`${item.name} (${item.qty} x ${item.price.toLocaleString("uz-UZ")}) = ${(item.qty * item.price).toLocaleString("uz-UZ")} so'm`);
+      });
+
+      lines.push("----------------------------------------");
+      lines.push(`Oraliq summa: ${subtotal.toLocaleString("uz-UZ")} so'm`);
+      if (discountPct > 0) {
+        lines.push(`Chegirma (${discountPct}%): -${discountAmount.toLocaleString("uz-UZ")} so'm`);
+      }
+      lines.push(`JAMI TO'LOV:  ${total.toLocaleString("uz-UZ")} so'm`);
+      if (method === "Naqd" && cashGiven > 0) {
+        lines.push(`Berilgan:     ${cashGiven.toLocaleString("uz-UZ")} so'm`);
+        lines.push(`Qaytim:       ${change.toLocaleString("uz-UZ")} so'm`);
+      }
+      lines.push("========================================");
+      lines.push("      Xaridingiz uchun rahmat!          ");
+      lines.push("========================================");
+
+      document.getElementById("receiptBox").textContent = lines.join("\n");
+
+      clearCart();
+      renderProducts();
+      renderHistory();
+    }
+
+    function printReceipt() {
+      const content = document.getElementById("receiptBox").textContent;
+      const win = window.open("", "", "width=400,height=600");
+      win.document.write(`<pre style="font-family: 'Courier New', monospace; font-size: 13px;">${content}</pre>`);
+      win.document.close();
+      win.print();
+    }
+
+    function renderHistory() {
+      const tbody = document.getElementById("historyBody");
+      tbody.innerHTML = "";
+
+      let totalRevenue = 0;
+
+      if (salesHistory.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; color: var(--muted); padding: 14px;'>Hali sotuv amalga oshirilmagan.</td></tr>";
+      } else {
+        salesHistory.forEach(sale => {
+          totalRevenue += sale.total;
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><strong>${sale.id}</strong></td>
+            <td>${sale.time}</td>
+            <td>${sale.items}</td>
+            <td>${sale.method}</td>
+            <td><strong>${formatMoney(sale.total)}</strong></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      document.getElementById("totalSalesBadge").textContent = "Jami tushum: " + formatMoney(totalRevenue);
+    }
+
+    function resetHistory() {
+      if (confirm("Sotuvlar tarixini rostdan ham tozalamoqchimisiz?")) {
+        salesHistory = [];
+        saveData();
+        renderHistory();
+      }
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+    renderProducts();
+    renderCart();
+    renderHistory();
+  </script>
+</body>
+</html>
