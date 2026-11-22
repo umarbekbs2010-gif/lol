@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maktab Kundaligi</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 24px;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 24px;
+      color: #111827;
+    }
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      padding: 10px 12px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+    }
+    button {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #1d4ed8;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+    th {
+      background-color: #f9fafb;
+    }
+    .delete-btn {
+      background-color: #ef4444;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    .delete-btn:hover {
+      background-color: #dc2626;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Maktab Kundaligi</h1>
+
+    <div class="form-row">
+      <input type="date" id="dateInput" />
+      <input type="text" id="subjectInput" placeholder="Fan nomi (masalan: Matematika)" />
+      <input type="text" id="topicInput" placeholder="Mavzu yoki uy vazifasi" />
+      <select id="gradeInput">
+        <option value="5">5 baho</option>
+        <option value="4">4 baho</option>
+        <option value="3">3 baho</option>
+        <option value="2">2 baho</option>
+      </select>
+      <button onclick="addEntry()">Qo‘shish</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Sana</th>
+          <th>Fan</th>
+          <th>Mavzu / Vazifa</th>
+          <th>Baho</th>
+          <th>Amal</th>
+        </tr>
+      </thead>
+      <tbody id="diaryBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const diaryBody = document.getElementById("diaryBody");
+    let entries = JSON.parse(localStorage.getItem("schoolDiary")) || [];
+
+    function saveAndRender() {
+      localStorage.setItem("schoolDiary", JSON.stringify(entries));
+      renderEntries();
+    }
+
+    function addEntry() {
+      const date = document.getElementById("dateInput").value;
+      const subject = document.getElementById("subjectInput").value.trim();
+      const topic = document.getElementById("topicInput").value.trim();
+      const grade = document.getElementById("gradeInput").value;
+
+      if (!date || !subject || !topic) {
+        alert("Iltimos, sana, fan va mavzu/vazifani kiriting.");
+        return;
+      }
+
+      entries.push({ id: Date.now(), date, subject, topic, grade });
+      document.getElementById("subjectInput").value = "";
+      document.getElementById("topicInput").value = "";
+      saveAndRender();
+    }
+
+    function deleteEntry(id) {
+      entries = entries.filter(item => item.id !== id);
+      saveAndRender();
+    }
+
+    function renderEntries() {
+      diaryBody.innerHTML = "";
+      entries.forEach(item => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${item.date}</td>
+          <td>${item.subject}</td>
+          <td>${item.topic}</td>
+          <td><strong>${item.grade}</strong></td>
+          <td><button class="delete-btn" onclick="deleteEntry(${item.id})">O‘chirish</button></td>
+        `;
+        diaryBody.appendChild(row);
+      });
+    }
+
+    renderEntries();
+  </script>
+</body>
+</html>
